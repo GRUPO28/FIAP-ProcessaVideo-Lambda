@@ -5,7 +5,7 @@ event = {
     {
       "messageId": "12345678-1234-5678-1234-567812345678",
       "receiptHandle": "AQEB...exampleReceiptHandle...",
-      "body": "{\"video_s3_bucket\": \"app-processa-video\", \"video_s3_key\": \"videos/sample_video.mp4\", \"s3_bucket\": \"app-processa-video\", \"s3_key\": \"imagens/frames.zip\"}",
+      "body": "{\"video_s3_bucket\": \"app-processa-video\", \"video_s3_key\": \"videos/sample_video.mp4\", \"s3_bucket\": \"app-processa-video\", \"s3_key\": \"imagens/frames.zip\", \"user_email\": \"paulo.avelinojunior@outlook.com\"}",
       "attributes": {
         "ApproximateReceiveCount": "1",
         "SentTimestamp": "1674567890123",
