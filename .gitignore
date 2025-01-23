@@ -1,0 +1,5 @@
+﻿app/services/__pycache__
+.idea
+app/__pycache__
+app/services/aws/__pycache__
+tests/__pycache__
