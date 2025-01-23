@@ -3,8 +3,8 @@
 Este projeto processa vídeos e cria um arquivo ZIP contendo os quadros extraídos.
 
 ## Estrutura
-- **app/controllers/**: Contém a função Lambda principal
-- **app/core/**: Contém a lógica de processamento de vídeo e criação de ZIP
+- **app/**: Contém a função Lambda principal
+- **app/services/**: Contém a lógica de processamento de vídeo e criação de ZIP
 - **tests/**: Testes unitários
 
 ### Dependências e estrutura para o teste local
