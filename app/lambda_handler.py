@@ -2,7 +2,7 @@ import json
 from app.services.video_processor_service import VideoProcessorService
 from app.services.zip_creator_service import ZipCreatorService
 from app.services.aws.s3_service import S3Service
-from app.services.aws.sns_service import SnsService
+from app.services.aws.ses_service import SesService
 
 
 class LambdaHandler:
@@ -10,9 +10,10 @@ class LambdaHandler:
         self.video_processor = VideoProcessorService()
         self.zip_creator = ZipCreatorService()
         self.s3_service = S3Service()
-        self.sns_service = SnsService()
+        self.ses_service = SesService()
 
     def process_event(self, event):
+        user_email = None
         try:
             record = event['Records'][0]  # Pegando o primeiro registro
             message = json.loads(record['body'])  # Carregando o JSON do campo `body`
@@ -23,6 +24,7 @@ class LambdaHandler:
             user_email = message.get('user_email')
 
             video_stream = self.s3_service.get_object_stream(video_s3_bucket, video_s3_key)
+
             frames = self.video_processor.process_video_frames_from_stream(self, video_stream)
 
             zip_buffer = self.zip_creator.create_zip_from_frames(frames)
@@ -30,8 +32,12 @@ class LambdaHandler:
             self.s3_service.upload_buffer_to_s3(zip_buffer, output_s3_bucket, output_s3_key)
 
             if user_email:
-                self.sns_service.notify_user(user_email,
-                                             f'Seu vídeo foi processado com sucesso. Arquivo disponível em: s3://{output_s3_bucket}/{output_s3_key}')
+                self.ses_service.send_email(
+                    from_email='paulo.avelinojunior@outlook.com',
+                    to_emails=[user_email],
+                    subject='Processamento de Vídeo Concluído',
+                    body=f'Seu vídeo foi processado com sucesso. Arquivo disponível em: s3://{output_s3_bucket}/{output_s3_key}'
+                )
 
             return {
                 'statusCode': 200,
@@ -39,8 +45,14 @@ class LambdaHandler:
             }
 
         except Exception as e:
+            # Envia e-mail de erro
             if user_email:
-                self.sns_service.notify_user(user_email, f'O processamento do seu vídeo falhou: {str(e)}')
+                self.ses_service.send_email(
+                    from_email='paulo.avelinojunior@outlook.com',
+                    to_emails=[user_email],
+                    subject='Erro no Processamento de Vídeo',
+                    body=f'O processamento do seu vídeo falhou. Erro: {str(e)}'
+                )
             return {
                 'statusCode': 500,
                 'body': str(e)
@@ -48,7 +60,6 @@ class LambdaHandler:
 
 
 lambda_handler_instance = LambdaHandler()
-
 
 def lambda_handler(event, context):
     return lambda_handler_instance.process_event(event)
