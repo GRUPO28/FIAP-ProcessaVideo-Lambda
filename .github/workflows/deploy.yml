@@ -40,7 +40,6 @@ jobs:
 
     - name: Install Lambda Dependencies and Package
       run: |
-        cd app  # Certifique-se de que está no diretório correto
         if [ -f ../requirements.txt ]; then
           pip install -r ../requirements.txt -t .  # Instala dependências
           zip -r ../video_processor.zip .  # Cria o pacote Lambda
