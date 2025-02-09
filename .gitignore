@@ -1,0 +1,10 @@
+﻿app/services/__pycache__
+.idea
+app/__pycache__
+app/services/aws/__pycache__
+tests/__pycache__
+tests/services/__pycache__
+tests/services/aws/__pycache__
+.terraform/
+terraform.tfstate*
+
