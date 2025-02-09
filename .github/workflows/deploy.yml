@@ -40,19 +40,14 @@ jobs:
 
     - name: Install Lambda Dependencies and Package
       run: |
-        if [ -f ../requirements.txt ]; then
-          pip install -r ../requirements.txt -t .  # Instala dependências
-          zip -r ../video_processor.zip .  # Cria o pacote Lambda
-          cd ..  # Retorna ao diretório raiz
-        else
-          echo "requirements.txt não encontrado no diretório raiz"
-          exit 1
-        fi
+        pip install -r ../requirements.txt -t .  # Instala dependências
+        zip -r ../video_processor.zip .  # Cria o pacote Lambda
+        cd ../terraform  # Retorna ao diretório Terraform
 
     - name: Verify Lambda Package
       run: |
-        ls -l  # Lista os arquivos para debug
-        if [ ! -f video_processor.zip ]; then
+        ls -l ../  # Lista os arquivos para debug
+        if [ ! -f ../video_processor.zip ]; then
           echo "Pacote video_processor.zip não encontrado!"
           exit 1
         fi
@@ -67,7 +62,15 @@ jobs:
 
     - name: Upload Lambda Package to S3
       run: |
-        aws s3 cp video_processor.zip s3://${{ secrets.AWS_S3_NAME }}/
+        aws s3 cp ../video_processor.zip s3://${{ secrets.AWS_S3_NAME }}/
+
+    - name: Deploy Lambda to AWS
+      run: |
+        aws lambda update-function-code \
+          --function-name video_processor \
+          --s3-bucket ${{ secrets.AWS_S3_NAME }} \
+          --s3-key video_processor.zip \
+          --region ${{ secrets.AWS_DEFAULT_REGION }}
 
     - name: Initialize Terraform
       run: terraform init
