@@ -5,5 +5,5 @@ variable "region" {
 
 variable "lambda_bucket" {
   description = "S3 bucket para armazenar o código da Lambda"
-  default     = "app-processa-video"
+  default     = "processa-video-infra"
 }

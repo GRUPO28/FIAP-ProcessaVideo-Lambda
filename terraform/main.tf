@@ -33,7 +33,7 @@ resource "aws_iam_policy" "lambda_policy" {
           "dynamodb:GetItem",
           "dynamodb:UpdateItem"
         ],
-        Resource = "arn:aws:dynamodb:us-east-1:617932910341:table/Videos"
+        Resource = "arn:aws:dynamodb:us-east-1:980029326297:table/Videos"
       },
       {
         Effect = "Allow",
@@ -42,8 +42,8 @@ resource "aws_iam_policy" "lambda_policy" {
           "s3:PutObject"
         ],
         Resource = [
-          "arn:aws:s3:::meu-bucket-input/*",
-          "arn:aws:s3:::meu-bucket-output/*"
+          "arn:aws:s3:us-east-1:980029326297:processa-video-app/*",
+          "arn:aws:s3:us-east-1:980029326297:processa-video-infra/*",
         ]
       },
       {
@@ -58,7 +58,7 @@ resource "aws_iam_policy" "lambda_policy" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ],
-        Resource = "arn:aws:logs:us-east-1:617932910341:log-group:/aws/lambda/video_processor:*"
+        Resource = "arn:aws:logs:us-east-1:980029326297:log-group:/aws/lambda/video_processor:*"
       }
     ]
   })
@@ -78,7 +78,7 @@ resource "aws_lambda_function" "video_processor" {
   runtime        = "python3.8"
   timeout        = 60
   memory_size    = 512
-  s3_bucket      = "app-processa-video"
+  s3_bucket      = "processa-video-infra"
   s3_key         = "video_processor.zip"
 
   environment {
@@ -96,5 +96,5 @@ resource "aws_lambda_permission" "allow_sqs" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.video_processor.function_name
   principal     = "sqs.amazonaws.com"
-  source_arn    = "arn:aws:sqs:us-east-1:617932910341:videos-queue"
+  source_arn    = "arn:aws:sqs:us-east-1:980029326297:videos-queue"
 }

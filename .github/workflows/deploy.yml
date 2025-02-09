@@ -36,7 +36,9 @@ jobs:
           cd ..
 
       - name: Enviar para S3
-        run: aws s3 cp video_processor.zip s3://app-processa-video/
+        env:
+          AWS_S3_NAME: ${{secrets.AWS_S3_NAME}}
+        run: aws s3 cp video_processor.zip s3://$AWS_S3_NAME/
 
       - name: Deploy com Terraform
         run: |
