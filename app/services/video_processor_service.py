@@ -10,7 +10,6 @@ class VideoProcessorService:
 
         byte_array = np.asarray(bytearray(video_stream.read()), dtype=np.uint8)
 
-        # Diretorio para o video temporario
         temp_dir = '/tmp'
         if not os.path.exists(temp_dir):
             os.makedirs(temp_dir)

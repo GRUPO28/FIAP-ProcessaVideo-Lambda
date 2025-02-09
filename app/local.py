@@ -3,19 +3,19 @@ from lambda_handler import lambda_handler
 event = {
   "Records": [
     {
-      "messageId": "12345678-1234-5678-1234-567812345678",
-      "receiptHandle": "AQEB...exampleReceiptHandle...",
-      "body": "{\"video_s3_bucket\": \"app-processa-video\", \"video_s3_key\": \"videos/sample_video.mp4\", \"s3_bucket\": \"app-processa-video\", \"s3_key\": \"imagens/frames.zip\", \"user_email\": \"p.avelinojunior@gmail.com\"}",
+      "messageId": "1",
+      "receiptHandle": "abc123",
+      "body": "{\"Id\": \"5DB47\", \"Usuario\": \"teste@example.com\", \"Url\": \"s3://meu-bucket/sample_video.mp4\"}",
       "attributes": {
         "ApproximateReceiveCount": "1",
-        "SentTimestamp": "1674567890123",
-        "SenderId": "AIDAIEXAMPLE",
-        "ApproximateFirstReceiveTimestamp": "1674567890123"
+        "SentTimestamp": "1647289200000",
+        "SenderId": "sender-id",
+        "ApproximateFirstReceiveTimestamp": "1647289200000"
       },
       "messageAttributes": {},
-      "md5OfBody": "098f6bcd4621d373cade4e832627b4f6",
+      "md5OfBody": "c8e05a1bd4f0c7d22c44db181b6a1299",
       "eventSource": "aws:sqs",
-      "eventSourceARN": "arn:aws:sqs:us-east-1:123456789012:MyQueue",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:123456789012:my-queue",
       "awsRegion": "us-east-1"
     }
   ]
