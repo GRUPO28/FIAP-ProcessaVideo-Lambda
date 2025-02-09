@@ -42,13 +42,18 @@ jobs:
         zip -r ../video_processor.zip .  # Cria o pacote Lambda
         cd ../terraform  # Retorna ao diretório Terraform
 
+    - name: Install Terraform
+      run: |
+        sudo apt-get update && sudo apt-get install -y unzip curl
+        curl -o terraform.zip "https://releases.hashicorp.com/terraform/1.3.6/terraform_1.3.6_linux_amd64.zip"
+        rm -rf terraform  # Remove qualquer diretório ou arquivo conflitante chamado "terraform"
+        unzip -o terraform.zip
+        sudo rm -f /usr/local/bin/terraform  # Remove binário antigo, se existir
+        sudo mv terraform /usr/local/bin/
+        terraform --version
+
     - name: Upload Lambda Package to S3
       run: aws s3 cp ../video_processor.zip s3://${{ secrets.AWS_S3_NAME }}/
-
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: "1.9.6"
 
     - name: Terraform Init
       run: terraform init
