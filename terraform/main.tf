@@ -35,14 +35,8 @@ resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
   policy_arn = data.aws_iam_policy.existing_lambda_policy.arn
 }
 
-# Buscar a Lambda existente, se ela já existir
-data "aws_lambda_function" "existing_lambda" {
-  function_name = "video_processor"
-}
-
-# Criar Lambda apenas se não existir
+# Função Lambda
 resource "aws_lambda_function" "video_processor" {
-  count         = length(data.aws_lambda_function.existing_lambda) > 0 ? 0 : 1
   function_name = "video_processor"
   role          = aws_iam_role.lambda_role.arn
   handler       = "lambda_function.lambda_handler"
@@ -61,29 +55,11 @@ resource "aws_lambda_function" "video_processor" {
   depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy]
 }
 
-# Buscar fila SQS existente
-data "aws_sqs_queue" "existing_video_queue" {
-  name = "videos-queue"
-}
-
 # Permissão para a Lambda ser acionada por eventos do SQS
 resource "aws_lambda_permission" "allow_sqs" {
   statement_id  = "AllowExecutionFromSQS"
   action        = "lambda:InvokeFunction"
-  function_name = coalesce(
-    length(data.aws_lambda_function.existing_lambda) > 0 ? data.aws_lambda_function.existing_lambda.function_name : "",
-    aws_lambda_function.video_processor[0].function_name
-  )
+  function_name = aws_lambda_function.video_processor.function_name
   principal     = "sqs.amazonaws.com"
-  source_arn    = data.aws_sqs_queue.existing_video_queue.arn
-}
-
-# Configurar a integração da SQS com a Lambda
-resource "aws_lambda_event_source_mapping" "sqs_lambda_trigger" {
-  event_source_arn = data.aws_sqs_queue.existing_video_queue.arn
-  function_name    = coalesce(
-    length(data.aws_lambda_function.existing_lambda) > 0 ? data.aws_lambda_function.existing_lambda.arn : "",
-    aws_lambda_function.video_processor[0].arn
-  )
-  batch_size       = 10
+  source_arn    = "arn:aws:sqs:us-east-1:980029326297:videos-queue"
 }
