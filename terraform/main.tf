@@ -28,7 +28,6 @@ resource "aws_iam_role" "lambda_role" {
           "sqs:DeleteMessage",
           "sqs:GetQueueAttributes"
         ],
-        Resource = aws_sqs_queue.video_queue.arn
       }
     ]
   })
