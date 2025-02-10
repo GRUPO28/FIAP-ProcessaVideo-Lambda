@@ -55,7 +55,7 @@ jobs:
     - name: Verify Lambda Package
       run: |
         ls -l  # Lista os arquivos do diretório raiz
-        if [ ! -f video_processor.zip ]; then
+        if [ ! -f ../video_processor.zip ]; then
           echo "Pacote video_processor.zip não encontrado!"
           exit 1
         fi
