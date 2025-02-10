@@ -115,10 +115,4 @@ resource "aws_lambda_event_source_mapping" "sqs_lambda_trigger" {
   batch_size       = 10
 }
 
-# Output corrigido para lidar com "count"
-output "lambda_arn" {
-  value = coalesce(
-    try(data.aws_lambda_function.existing_lambda.arn, ""),
-    try(length(aws_lambda_function.video_processor) > 0 ? aws_lambda_function.video_processor[0].arn : "")
-  )
-}
+
