@@ -96,5 +96,5 @@ resource "aws_lambda_permission" "allow_sqs" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.video_processor.function_name
   principal     = "sqs.amazonaws.com"
-  source_arn    = "arn:aws:980029326297:videos-queue"
+  source_arn    = "arn:aws:sqs:us-east-1:980029326297:videos-queue"
 }
