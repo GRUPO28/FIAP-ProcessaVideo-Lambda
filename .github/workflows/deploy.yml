@@ -75,7 +75,7 @@ jobs:
     # Executar testes
     - name: Run Tests
       run: |
-        pytest tests/  # Substitua pelo caminho correto da pasta de testes
+        pytest ../tests/  # Substitua pelo caminho correto da pasta de testes
 
     # Instalar Terraform
     - name: Install Terraform
