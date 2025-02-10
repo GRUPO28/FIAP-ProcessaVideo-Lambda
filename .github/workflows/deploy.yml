@@ -44,10 +44,9 @@ jobs:
         ls -l   # Lista os arquivos antes da instalação
 
         if [ -f ../requirements.txt ]; then
-          pip install -r ../requirements.txt -t ../app  # Instala dependências de produção
-          cd ../app
+          pip install -r ../requirements.txt -t .  # Instala dependências de produção
           zip -r ../video_processor.zip .  # Cria o pacote ZIP no diretório raiz
-          ls -l  # Lista os arquivos depois para verificar se o ZIP foi criado corretamente
+          ls -l ../  # Lista os arquivos depois para verificar se o ZIP foi criado corretamente
           cd ..  # Retorna ao diretório raiz
         else
           echo "requirements.txt não encontrado no diretório raiz"
@@ -58,7 +57,7 @@ jobs:
     - name: Verify Lambda Package
       run: |
         ls -l  # Lista os arquivos do diretório raiz
-        if [ ! -f ../app/video_processor.zip ]; then
+        if [ ! -f ../video_processor.zip ]; then
           echo "Pacote video_processor.zip não encontrado!"
           exit 1
         fi
@@ -91,7 +90,7 @@ jobs:
     # Fazer upload do pacote Lambda para o S3
     - name: Upload Lambda Package to S3
       run: |
-        aws s3 cp ../app/video_processor.zip s3://${{ secrets.AWS_S3_NAME }}/
+        aws s3 cp ../video_processor.zip s3://${{ secrets.AWS_S3_NAME }}/
 
     # Inicializar Terraform
     - name: Initialize Terraform
