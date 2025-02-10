@@ -72,10 +72,11 @@ jobs:
           exit 1
         fi
 
-    # Executar testes
+     # Executar testes
     - name: Run Tests
       run: |
-        pytest ../tests/  # Substitua pelo caminho correto da pasta de testes
+        export PYTHONPATH=$PYTHONPATH:$(pwd)
+        pytest ../tests/
 
     # Instalar Terraform
     - name: Install Terraform
