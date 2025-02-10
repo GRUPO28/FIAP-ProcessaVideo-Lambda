@@ -55,14 +55,6 @@ resource "aws_lambda_function" "video_processor" {
   depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy]
 }
 
-# Permissão para a Lambda ser acionada por eventos do SQS
-resource "aws_lambda_permission" "allow_sqs" {
-  statement_id  = "AllowExecutionFromSQS"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.video_processor.function_name
-  principal     = "sqs.amazonaws.com"
-  source_arn    = "arn:aws:sqs:us-east-1:980029326297:videos-queue"
-}
 # Buscar a Lambda existente, se ela já existir
 data "aws_lambda_function" "existing_lambda" {
   function_name = "video_processor"
