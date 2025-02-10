@@ -25,54 +25,16 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
-# Política de permissões da Lambda
+# Buscar política IAM existente
 data "aws_iam_policy" "existing_lambda_policy" {
   name = "lambda_access_policy"
-  description = "Permissões para Lambda acessar S3, DynamoDB e SES"
-  policy      = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "dynamodb:GetItem",
-          "dynamodb:UpdateItem"
-        ],
-        Resource = "arn:aws:dynamodb:us-east-1:980029326297:table/Videos"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject"
-        ],
-        Resource = [
-          "arn:aws:s3:::processa-video-app/*",
-          "arn:aws:s3:::processa-video-infra/*"
-        ]
-      },
-      {
-        Effect = "Allow",
-        Action = "ses:SendEmail",
-        Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ],
-        Resource = "arn:aws:logs:us-east-1:980029326297:log-group:/aws/lambda/video_processor:*"
-      }
-    ]
-  })
 }
 
 resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = data.aws_iam_policy.existing_lambda_policy.arn
 }
+
 # Função Lambda
 resource "aws_lambda_function" "video_processor" {
   function_name = "video_processor"
