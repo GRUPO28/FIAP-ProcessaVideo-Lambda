@@ -77,7 +77,7 @@ resource "aws_lambda_function" "video_processor" {
   count         = length(data.aws_lambda_function.existing_lambda) > 0 ? 0 : 1
   function_name = "video_processor"
   role          = aws_iam_role.lambda_role.arn
-  handler       = "lambda_handler.lambda_handler"
+  handler       = "lambda_function.lambda_handler"
   runtime       = "python3.8"
   timeout       = 60
   memory_size   = 512
@@ -90,10 +90,7 @@ resource "aws_lambda_function" "video_processor" {
     }
   }
 
-  depends_on = [
-    aws_iam_role_policy_attachment.attach_lambda_policy,
-    aws_iam_role_policy_attachment.attach_lambda_sqs_policy
-  ]
+  depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy, aws_iam_role_policy_attachment.attach_lambda_sqs_policy]
 }
 
 # Permissão para a Lambda ser acionada por eventos do SQS
@@ -106,4 +103,14 @@ resource "aws_lambda_permission" "allow_sqs" {
   )
   principal     = "sqs.amazonaws.com"
   source_arn    = data.aws_sqs_queue.existing_video_queue.arn
+}
+
+# Configurar a integração da SQS com a Lambda
+resource "aws_lambda_event_source_mapping" "sqs_lambda_trigger" {
+  event_source_arn = data.aws_sqs_queue.existing_video_queue.arn
+  function_name    = coalesce(
+    try(data.aws_lambda_function.existing_lambda.arn, ""),
+    try(length(aws_lambda_function.video_processor) > 0 ? aws_lambda_function.video_processor[0].arn : "")
+  )
+  batch_size       = 10
 }
