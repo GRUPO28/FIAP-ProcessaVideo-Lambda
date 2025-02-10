@@ -60,5 +60,5 @@ resource "aws_lambda_function" "video_processor" {
     }
   }
 
-  depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy, aws_iam_role_policy_attachment.attach_lambda_sqs_policy]
+  depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy]
 }
