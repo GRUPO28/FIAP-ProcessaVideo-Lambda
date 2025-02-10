@@ -40,7 +40,6 @@ jobs:
 
     - name: Install Lambda Dependencies and Package
       run: |
-        cd app  # Navega para o diretório correto
         ls -l   # Lista os arquivos antes da instalação
 
         if [ -f ../requirements.txt ]; then
