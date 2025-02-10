@@ -45,10 +45,10 @@ jobs:
 
         if [ -f ../requirements.txt ]; then
           pip install -r ../requirements.txt -t .  # Instala dependências de produção
-          cd ..  # Retorna ao diretório raiz
-          zip -r terraform/video_processor.zip .  # Cria o pacote ZIP no diretório raiz
+          cp ../lambda_handler.py .  # Copia o handler para o diretório de destino
+          zip -r ../video_processor.zip .  # Cria o pacote ZIP incluindo lambda_handler.py
           ls -l ../  # Lista os arquivos depois para verificar se o ZIP foi criado corretamente
-          cd /terraform
+          cd ..  # Retorna ao diretório raiz
         else
           echo "requirements.txt não encontrado no diretório raiz"
           exit 1
@@ -73,10 +73,11 @@ jobs:
           exit 1
         fi
 
-    # Executar testes
+     # Executar testes
     - name: Run Tests
       run: |
-        pytest ../tests/  # Substitua pelo caminho correto da pasta de testes
+        export PYTHONPATH=$PYTHONPATH:$(pwd)/..
+        pytest --import-mode=importlib ../tests/
 
     # Instalar Terraform
     - name: Install Terraform
@@ -106,4 +107,8 @@ jobs:
 
     # Aplicar a configuração do Terraform
     - name: Apply Terraform Configuration
+      run: terraform apply -auto-approve
+
+    # Reutilizar política IAM existente
+    - name: Attach Existing IAM Policy
       run: terraform apply -auto-approve
