@@ -64,7 +64,7 @@ data "aws_sqs_queue" "existing_video_queue" {
 resource "aws_lambda_permission" "allow_sqs" {
   statement_id  = "AllowExecutionFromSQS"
   action        = "lambda:InvokeFunction"
-  function_name = data.aws_lambda_function.existing_lambda.function_name
+  function_name = aws_lambda_function.video_processor.function_name
   principal     = "sqs.amazonaws.com"
   source_arn    = data.aws_sqs_queue.existing_video_queue.arn
 }
@@ -72,6 +72,6 @@ resource "aws_lambda_permission" "allow_sqs" {
 # Configurar a integração da SQS com a Lambda
 resource "aws_lambda_event_source_mapping" "sqs_lambda_trigger" {
   event_source_arn = data.aws_sqs_queue.existing_video_queue.arn
-  function_name    = data.aws_lambda_function.existing_lambda.arn
+  function_name    = aws_lambda_function.video_processor.arn
   batch_size       = 10
 }
