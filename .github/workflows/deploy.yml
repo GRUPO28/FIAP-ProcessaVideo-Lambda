@@ -38,12 +38,13 @@ jobs:
       with:
         python-version: '3.9'
 
+    # Instalar dependências de produção e criar o pacote Lambda
     - name: Install Lambda Dependencies and Package
       run: |
         ls -l   # Lista os arquivos antes da instalação
 
         if [ -f ../requirements.txt ]; then
-          pip install -r ../requirements.txt -t .  # Instala dependências
+          pip install -r ../requirements.txt -t .  # Instala dependências de produção
           zip -r ../video_processor.zip .  # Cria o pacote ZIP no diretório raiz
           ls -l ../  # Lista os arquivos depois para verificar se o ZIP foi criado corretamente
           cd ..  # Retorna ao diretório raiz
@@ -52,14 +53,31 @@ jobs:
           exit 1
         fi
 
+    # Verificar se o pacote Lambda foi criado
     - name: Verify Lambda Package
       run: |
         ls -l  # Lista os arquivos do diretório raiz
-        if [ ! -f ../video_processor.zip ]; then
+        if [ ! -f video_processor.zip ]; then
           echo "Pacote video_processor.zip não encontrado!"
           exit 1
         fi
 
+    # Instalar dependências de teste
+    - name: Install Test Dependencies
+      run: |
+        if [ -f requirements-test.txt ]; then
+          pip install -r requirements-test.txt  # Instala dependências de teste
+        else
+          echo "requirements-test.txt não encontrado"
+          exit 1
+        fi
+
+    # Executar testes
+    - name: Run Tests
+      run: |
+        pytest tests/  # Substitua pelo caminho correto da pasta de testes
+
+    # Instalar Terraform
     - name: Install Terraform
       run: |
         sudo apt-get update && sudo apt-get install -y unzip curl
@@ -68,18 +86,23 @@ jobs:
         sudo mv terraform /usr/local/bin/
         terraform --version
 
+    # Fazer upload do pacote Lambda para o S3
     - name: Upload Lambda Package to S3
       run: |
-        aws s3 cp ../video_processor.zip s3://${{ secrets.AWS_S3_NAME }}/
+        aws s3 cp video_processor.zip s3://${{ secrets.AWS_S3_NAME }}/
 
+    # Inicializar Terraform
     - name: Initialize Terraform
       run: terraform init
 
+    # Validar configuração do Terraform
     - name: Validate Terraform Configuration
       run: terraform validate
 
+    # Planejar a execução do Terraform
     - name: Plan Terraform Deployment
       run: terraform plan -out=tfplan
 
+    # Aplicar a configuração do Terraform
     - name: Apply Terraform Configuration
       run: terraform apply -auto-approve
