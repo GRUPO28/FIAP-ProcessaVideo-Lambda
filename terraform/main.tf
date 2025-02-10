@@ -9,7 +9,7 @@ resource "random_id" "role_suffix" {
 
 # Role da Lambda
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda_execution_role"
+  name = "lambda_execution_role_${random_id.role_suffix.hex}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -25,28 +25,6 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
-# Política para permitir que a Lambda acesse a SQS
-resource "aws_iam_policy" "lambda_sqs_policy" {
-  depends_on = [aws_sqs_queue.video_queue]
-  name        = "lambda_sqs_policy_${random_id.role_suffix.hex}"
-  description = "Permissões para a Lambda acessar SQS"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes"
-        ],
-        "Resource": [aws_sqs_queue.video_queue.arn]
-      }
-    ]
-  })
-}
-
 # Buscar política IAM existente
 data "aws_iam_policy" "existing_lambda_policy" {
   name = "lambda_access_policy"
@@ -57,19 +35,7 @@ resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
   policy_arn = data.aws_iam_policy.existing_lambda_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "attach_lambda_sqs_policy" {
-  role       = aws_iam_role.lambda_role.name
-  policy_arn = aws_iam_policy.lambda_sqs_policy.arn
-}
-
-# Criar fila SQS, caso não exista
-resource "aws_sqs_queue" "video_queue" {
-  name                      = "videos-queue"
-  visibility_timeout_seconds = 60
-  message_retention_seconds = 86400  # 1 dia
-}
-
-# Criar Lambda apenas se não existir
+# Função Lambda
 resource "aws_lambda_function" "video_processor" {
   function_name = "video_processor"
   role          = aws_iam_role.lambda_role.arn
@@ -86,5 +52,14 @@ resource "aws_lambda_function" "video_processor" {
     }
   }
 
-  depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy, aws_iam_role_policy_attachment.attach_lambda_sqs_policy]
+  depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy]
+}
+
+# Permissão para a Lambda ser acionada por eventos do SQS
+resource "aws_lambda_permission" "allow_sqs" {
+  statement_id  = "AllowExecutionFromSQS"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.video_processor.function_name
+  principal     = "sqs.amazonaws.com"
+  source_arn    = "arn:aws:sqs:us-east-1:980029326297:videos-queue"
 }
