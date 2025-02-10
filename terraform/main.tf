@@ -42,7 +42,7 @@ data "aws_lambda_function" "existing_lambda" {
 
 # Criar Lambda apenas se não existir
 resource "aws_lambda_function" "video_processor" {
-  count         = length(data.aws_lambda_function.existing_lambda) == 0 ? 1 : 0
+  count         = length(data.aws_lambda_function.existing_lambda) > 0 ? 0 : 1
   function_name = "video_processor"
   role          = aws_iam_role.lambda_role.arn
   handler       = "lambda_function.lambda_handler"
@@ -71,7 +71,7 @@ resource "aws_lambda_permission" "allow_sqs" {
   statement_id  = "AllowExecutionFromSQS"
   action        = "lambda:InvokeFunction"
   function_name = coalesce(
-    join("", data.aws_lambda_function.existing_lambda[*].function_name),
+    length(data.aws_lambda_function.existing_lambda) > 0 ? data.aws_lambda_function.existing_lambda.function_name : "",
     aws_lambda_function.video_processor[0].function_name
   )
   principal     = "sqs.amazonaws.com"
@@ -82,7 +82,7 @@ resource "aws_lambda_permission" "allow_sqs" {
 resource "aws_lambda_event_source_mapping" "sqs_lambda_trigger" {
   event_source_arn = data.aws_sqs_queue.existing_video_queue.arn
   function_name    = coalesce(
-    join("", data.aws_lambda_function.existing_lambda[*].arn),
+    length(data.aws_lambda_function.existing_lambda) > 0 ? data.aws_lambda_function.existing_lambda.arn : "",
     aws_lambda_function.video_processor[0].arn
   )
   batch_size       = 10
