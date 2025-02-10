@@ -35,46 +35,8 @@ resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
   policy_arn = data.aws_iam_policy.existing_lambda_policy.arn
 }
 
-# Buscar fila SQS existente
-data "aws_sqs_queue" "existing_video_queue" {
-  name = "videos-queue"
-}
-
-# Permissões adicionais para a Lambda acessar a SQS
-resource "aws_iam_policy" "lambda_sqs_policy" {
-  name        = "lambda_sqs_policy_${random_id.role_suffix.hex}"
-  description = "Permissões para a Lambda acessar SQS"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes"
-        ],
-        Resource = data.aws_sqs_queue.existing_video_queue.arn
-      }
-    ]
-  })
-}
-
-# Anexar política de permissões da SQS à role da Lambda
-resource "aws_iam_role_policy_attachment" "attach_lambda_sqs_policy" {
-  role       = aws_iam_role.lambda_role.name
-  policy_arn = aws_iam_policy.lambda_sqs_policy.arn
-}
-
-# Buscar a Lambda existente, se ela já existir
-data "aws_lambda_function" "existing_lambda" {
-  function_name = "video_processor"
-}
-
-# Criar Lambda apenas se não existir
+# Função Lambda
 resource "aws_lambda_function" "video_processor" {
-  count         = try(length(data.aws_lambda_function.existing_lambda.arn), 0) > 0 ? 0 : 1
   function_name = "video_processor"
   role          = aws_iam_role.lambda_role.arn
   handler       = "lambda_function.lambda_handler"
@@ -90,5 +52,14 @@ resource "aws_lambda_function" "video_processor" {
     }
   }
 
-  depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy, aws_iam_role_policy_attachment.attach_lambda_sqs_policy]
+  depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy]
+}
+
+# Permissão para a Lambda ser acionada por eventos do SQS
+resource "aws_lambda_permission" "allow_sqs" {
+  statement_id  = "AllowExecutionFromSQS"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.video_processor.function_name
+  principal     = "sqs.amazonaws.com"
+  source_arn    = "arn:aws:sqs:us-east-1:980029326297:videos-queue"
 }
