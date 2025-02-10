@@ -27,6 +27,7 @@ resource "aws_iam_role" "lambda_role" {
 
 # Política para permitir que a Lambda acesse a SQS
 resource "aws_iam_policy" "lambda_sqs_policy" {
+  depends_on = [aws_sqs_queue.video_queue]
   name        = "lambda_sqs_policy_${random_id.role_suffix.hex}"
   description = "Permissões para a Lambda acessar SQS"
 
@@ -39,7 +40,8 @@ resource "aws_iam_policy" "lambda_sqs_policy" {
           "sqs:ReceiveMessage",
           "sqs:DeleteMessage",
           "sqs:GetQueueAttributes"
-        ]
+        ],
+        "Resource": [aws_sqs_queue.video_queue.arn]
       }
     ]
   })
@@ -58,6 +60,13 @@ resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
 resource "aws_iam_role_policy_attachment" "attach_lambda_sqs_policy" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = aws_iam_policy.lambda_sqs_policy.arn
+}
+
+# Criar fila SQS, caso não exista
+resource "aws_sqs_queue" "video_queue" {
+  name                      = "videos-queue"
+  visibility_timeout_seconds = 60
+  message_retention_seconds = 86400  # 1 dia
 }
 
 # Criar Lambda apenas se não existir
