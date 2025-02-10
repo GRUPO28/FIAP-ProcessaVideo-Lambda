@@ -44,13 +44,6 @@ resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
   policy_arn = data.aws_iam_policy.existing_lambda_policy.arn
 }
 
-# Criar fila SQS, caso não exista
-resource "aws_sqs_queue" "video_queue" {
-  name                      = "videos-queue"
-  visibility_timeout_seconds = 60
-  message_retention_seconds = 86400  # 1 dia
-}
-
 # Permissões adicionais para a Lambda acessar a SQS
 resource "aws_iam_policy" "lambda_sqs_policy" {
   name        = "lambda_sqs_policy_${random_id.role_suffix.hex}"
