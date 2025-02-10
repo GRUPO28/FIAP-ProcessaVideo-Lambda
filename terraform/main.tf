@@ -25,6 +25,21 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
+# Buscar política IAM existente
+data "aws_iam_policy" "existing_lambda_policy" {
+  name = "lambda_access_policy"
+}
+
+resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = data.aws_iam_policy.existing_lambda_policy.arn
+}
+
+# Buscar fila SQS existente
+data "aws_sqs_queue" "existing_video_queue" {
+  name = "videos-queue"
+}
+
 # Permissões adicionais para a Lambda acessar a SQS
 resource "aws_iam_policy" "lambda_sqs_policy" {
   name        = "lambda_sqs_policy_${random_id.role_suffix.hex}"
@@ -52,16 +67,6 @@ resource "aws_iam_role_policy_attachment" "attach_lambda_sqs_policy" {
   policy_arn = aws_iam_policy.lambda_sqs_policy.arn
 }
 
-# Buscar política IAM existente
-data "aws_iam_policy" "existing_lambda_policy" {
-  name = "lambda_access_policy"
-}
-
-resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
-  role       = aws_iam_role.lambda_role.name
-  policy_arn = data.aws_iam_policy.existing_lambda_policy.arn
-}
-
 # Buscar a Lambda existente, se ela já existir
 data "aws_lambda_function" "existing_lambda" {
   function_name = "video_processor"
@@ -87,6 +92,3 @@ resource "aws_lambda_function" "video_processor" {
 
   depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy, aws_iam_role_policy_attachment.attach_lambda_sqs_policy]
 }
-
-
-
