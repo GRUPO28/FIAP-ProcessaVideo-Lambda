@@ -35,9 +35,24 @@ resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
   policy_arn = data.aws_iam_policy.existing_lambda_policy.arn
 }
 
-# Buscar função Lambda existente
-data "aws_lambda_function" "existing_lambda" {
+# Função Lambda
+resource "aws_lambda_function" "video_processor" {
   function_name = "video_processor"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.8"
+  timeout       = 60
+  memory_size   = 512
+  s3_bucket     = "processa-video-infra"
+  s3_key        = "video_processor.zip"
+
+  environment {
+    variables = {
+      TABLE_NAME = "Videos"
+    }
+  }
+
+  depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy]
 }
 
 # Buscar fila SQS existente
