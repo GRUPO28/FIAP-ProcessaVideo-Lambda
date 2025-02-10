@@ -97,19 +97,3 @@ resource "aws_lambda_function" "video_processor" {
 
   depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy, aws_iam_role_policy_attachment.attach_lambda_sqs_policy]
 }
-
-# Permissão para a Lambda ser acionada por eventos do SQS
-resource "aws_lambda_permission" "allow_sqs" {
-  statement_id  = "AllowExecutionFromSQS"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.video_processor.function_name
-  principal     = "sqs.amazonaws.com"
-  source_arn    = aws_sqs_queue.video_queue.arn
-}
-
-# Configurar a integração da SQS com a Lambda
-resource "aws_lambda_event_source_mapping" "sqs_lambda_trigger" {
-  event_source_arn = aws_sqs_queue.video_queue.arn
-  function_name    = aws_lambda_function.video_processor.arn
-  batch_size       = 10
-}
