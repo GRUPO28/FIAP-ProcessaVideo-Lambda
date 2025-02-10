@@ -75,8 +75,8 @@ jobs:
      # Executar testes
     - name: Run Tests
       run: |
-        export PYTHONPATH=$PYTHONPATH:$(pwd)
-        pytest ../tests/
+        export PYTHONPATH=$PYTHONPATH:$(pwd)/..
+        pytest --import-mode=importlib ../tests/
 
     # Instalar Terraform
     - name: Install Terraform
