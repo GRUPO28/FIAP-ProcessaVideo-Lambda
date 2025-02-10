@@ -44,27 +44,6 @@ resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
   policy_arn = data.aws_iam_policy.existing_lambda_policy.arn
 }
 
-# Permissões adicionais para a Lambda acessar a SQS
-resource "aws_iam_policy" "lambda_sqs_policy" {
-  name        = "lambda_sqs_policy_${random_id.role_suffix.hex}"
-  description = "Permissões para a Lambda acessar SQS"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes"
-        ],
-        Resource = aws_sqs_queue.video_queue.arn
-      }
-    ]
-  })
-}
-
 # Anexar política de permissões da SQS à role da Lambda
 resource "aws_iam_role_policy_attachment" "attach_lambda_sqs_policy" {
   role       = aws_iam_role.lambda_role.name
