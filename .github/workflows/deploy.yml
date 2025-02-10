@@ -91,7 +91,7 @@ jobs:
     # Fazer upload do pacote Lambda para o S3
     - name: Upload Lambda Package to S3
       run: |
-        aws s3 cp ../video_processor.zip s3://${{ secrets.AWS_S3_NAME }}/
+        aws s3 cp ../app/video_processor.zip s3://${{ secrets.AWS_S3_NAME }}/
 
     # Inicializar Terraform
     - name: Initialize Terraform
