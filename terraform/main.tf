@@ -2,16 +2,21 @@ provider "aws" {
   region = "us-east-1"
 }
 
+# Gerar um identificador único para o nome da role
+resource "random_id" "role_suffix" {
+  byte_length = 4
+}
+
 # Role da Lambda
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda_execution_role"
+  name = "lambda_execution_role_${random_id.role_suffix.hex}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
         Principal = {
           Service = "lambda.amazonaws.com"
         }
@@ -33,7 +38,7 @@ resource "aws_iam_policy" "lambda_policy" {
           "dynamodb:GetItem",
           "dynamodb:UpdateItem"
         ],
-        Resource = "arn:aws:dynamodb:980029326297:table/Videos"
+        Resource = "arn:aws:dynamodb:us-east-1:980029326297:table/Videos"
       },
       {
         Effect = "Allow",
@@ -42,8 +47,8 @@ resource "aws_iam_policy" "lambda_policy" {
           "s3:PutObject"
         ],
         Resource = [
-          "arn:aws:s3:980029326297:processa-video-app/*",
-          "arn:aws:s3:980029326297:processa-video-infra/*",
+          "arn:aws:s3:::processa-video-app/*",
+          "arn:aws:s3:::processa-video-infra/*"
         ]
       },
       {
@@ -58,7 +63,7 @@ resource "aws_iam_policy" "lambda_policy" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ],
-        Resource = "arn:aws:980029326297:log-group:/aws/lambda/video_processor:*"
+        Resource = "arn:aws:logs:us-east-1:980029326297:log-group:/aws/lambda/video_processor:*"
       }
     ]
   })
@@ -72,14 +77,14 @@ resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
 
 # Função Lambda
 resource "aws_lambda_function" "video_processor" {
-  function_name    = "video_processor"
-  role            = aws_iam_role.lambda_role.arn
-  handler        = "lambda_function.lambda_handler"
-  runtime        = "python3.8"
-  timeout        = 60
-  memory_size    = 512
-  s3_bucket      = "processa-video-infra"
-  s3_key         = "video_processor.zip"
+  function_name = "video_processor"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.8"
+  timeout       = 60
+  memory_size   = 512
+  s3_bucket     = "processa-video-infra"
+  s3_key        = "video_processor.zip"
 
   environment {
     variables = {
@@ -90,7 +95,7 @@ resource "aws_lambda_function" "video_processor" {
   depends_on = [aws_iam_role_policy_attachment.attach_lambda_policy]
 }
 
-# Permissão para a Lambda ser acionada por eventos do SQS (se necessário)
+# Permissão para a Lambda ser acionada por eventos do SQS
 resource "aws_lambda_permission" "allow_sqs" {
   statement_id  = "AllowExecutionFromSQS"
   action        = "lambda:InvokeFunction"
